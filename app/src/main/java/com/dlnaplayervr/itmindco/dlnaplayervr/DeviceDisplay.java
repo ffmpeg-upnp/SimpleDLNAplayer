@@ -59,6 +59,6 @@ public class DeviceDisplay {
                         ? getDevice().getDetails().getFriendlyName()
                         : getDevice().getDisplayString();
         // Display a little star while the device is being loaded (see performance optimization earlier)
-        return device.isFullyHydrated() ? name + getDetailsMessage() : name + " *";
+        return device.isFullyHydrated() ? name : name + " *";
     }
 }

@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         if (listView != null) {
             listView.setAdapter(listAdapter);
-            listView.setOnItemClickListener(this);
+            listView.setOnItemClickListener(MainActivity.this);
         }
 
         registryListener = new BrowseRegistryListener(MainActivity.this);
@@ -151,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //return super.onOptionsItemSelected(item);
     }
 
+
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         Object model = adapterView.getItemAtPosition(i);
@@ -172,10 +173,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 //mCurrentDevice = deviceModel;
             } else {
-                Toast.makeText(this, "wait... load...", Toast.LENGTH_SHORT)
-                        .show();
+                Toast.makeText(this, "wait... load...", Toast.LENGTH_SHORT).show();
             }
         }
-
     }
 }
