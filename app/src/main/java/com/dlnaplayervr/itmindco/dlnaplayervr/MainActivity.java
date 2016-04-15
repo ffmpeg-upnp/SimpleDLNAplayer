@@ -1,5 +1,6 @@
 package com.dlnaplayervr.itmindco.dlnaplayervr;
 
+import android.app.FragmentManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -24,37 +25,14 @@ import org.fourthline.cling.model.meta.Service;
 import org.fourthline.cling.transport.Router;
 import org.fourthline.cling.transport.RouterException;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
+import java.util.ArrayList;
 
-    public ArrayAdapter<DeviceDisplay> listAdapter;
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, ContentDirectoryBrowseTaskFragment.Callbacks {
 
-    private BrowseRegistryListener registryListener;
-
-    private AndroidUpnpService upnpService;
-
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            upnpService = (AndroidUpnpService) service;
-
-            listAdapter.clear();
-
-            // Get ready for future device advertisements
-            upnpService.getRegistry().addListener(registryListener);
-
-            // Now add all devices to the list we already know about
-            for (Device device : upnpService.getRegistry().getDevices()) {
-                registryListener.deviceAdded(device);
-            }
-
-            // Search asynchronously for all devices, they will respond soon
-            upnpService.getControlPoint().search();
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            upnpService = null;
-        }
-    };
+    private ContentDirectoryBrowseTaskFragment mFragment;
+    private ArrayAdapter<CustomListItem> mDeviceListAdapter;
+    private ArrayAdapter<CustomListItem> mItemListAdapter;
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +41,27 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FragmentManager fragmentManager = getFragmentManager();
+        mFragment = (ContentDirectoryBrowseTaskFragment)fragmentManager.findFragmentByTag("task");
+
+        mDeviceListAdapter = new CustomListAdapter(this);
+        mItemListAdapter = new CustomListAdapter(this);
+
+        listView = (ListView)findViewById(R.id.listView);
+         if (listView != null) {
+            listView.setAdapter(mDeviceListAdapter);
+            listView.setOnItemClickListener(MainActivity.this);
+        }
+
+        if (mFragment == null) {
+            mFragment = new ContentDirectoryBrowseTaskFragment();
+            fragmentManager.beginTransaction().add(mFragment, "task").commit();
+        } else {
+            mFragment.refreshDevices();
+            mFragment.refreshCurrent();
+        }
+
+        //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
@@ -71,30 +69,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //                        .setAction("Action", null).show();
 //            }
 //        });
-
-        ListView listView = (ListView)findViewById(R.id.listView);
-        listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        if (listView != null) {
-            listView.setAdapter(listAdapter);
-            listView.setOnItemClickListener(MainActivity.this);
-        }
-
-        registryListener = new BrowseRegistryListener(MainActivity.this);
-
-        getApplicationContext().bindService(
-                new Intent(this, AndroidUpnpServiceImpl.class),
-                serviceConnection,
-                Context.BIND_AUTO_CREATE
-        );
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (upnpService != null) {
-            upnpService.getRegistry().removeListener(registryListener);
-        }
-        getApplicationContext().unbindService(serviceConnection);
+//        unregisterReceiver(receiver);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mFragment.goBack())
+            super.onBackPressed();
     }
 
     @Override
@@ -121,29 +107,26 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         switch (item.getItemId()) {
             case 0:
-                Log.i("DLNA","Search lan");
-                if (upnpService == null)
-                    break;
-                Toast.makeText(this, R.string.searchingLAN, Toast.LENGTH_SHORT).show();
-                upnpService.getRegistry().removeAllRemoteDevices();
-                upnpService.getControlPoint().search();
+                mFragment.refreshDevices();
+                mFragment.refreshCurrent();
+
                 break;
             case 1:
-                if (upnpService != null) {
-                    Router router = upnpService.get().getRouter();
-                    try {
-                        if (router.isEnabled()) {
-                            Toast.makeText(this, R.string.disablingRouter, Toast.LENGTH_SHORT).show();
-                            router.disable();
-                        } else {
-                            Toast.makeText(this, R.string.enablingRouter, Toast.LENGTH_SHORT).show();
-                            router.enable();
-                        }
-                    } catch (RouterException ex) {
-                        Toast.makeText(this, getText(R.string.errorSwitchingRouter) + ex.toString(), Toast.LENGTH_LONG).show();
-                        ex.printStackTrace(System.err);
-                    }
-                }
+//                if (upnpService != null) {
+//                    Router router = upnpService.get().getRouter();
+//                    try {
+//                        if (router.isEnabled()) {
+//                            Toast.makeText(this, R.string.disablingRouter, Toast.LENGTH_SHORT).show();
+//                            router.disable();
+//                        } else {
+//                            Toast.makeText(this, R.string.enablingRouter, Toast.LENGTH_SHORT).show();
+//                            router.enable();
+//                        }
+//                    } catch (RouterException ex) {
+//                        Toast.makeText(this, getText(R.string.errorSwitchingRouter) + ex.toString(), Toast.LENGTH_LONG).show();
+//                        ex.printStackTrace(System.err);
+//                    }
+//                }
                 break;
         }
         return false;
@@ -154,27 +137,78 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        Object model = adapterView.getItemAtPosition(i);
-        if (model instanceof DeviceDisplay) {
+        mFragment.navigateTo(adapterView.getItemAtPosition(i));
+    }
 
-            DeviceDisplay deviceModel = (DeviceDisplay)model;
-            Device device = deviceModel.getDevice();
-
-            if (device.isFullyHydrated()) {
-                Service conDir = deviceModel.getContentDirectory();
-
-                if (conDir != null)
-                    upnpService.getControlPoint().execute(
-                            new CustomContentBrowseTestCallback(device, conDir,registryListener));
-
-                //if (registryListener != null)
-                //    registryListener.onDisplayDirectories();
-
-
-                //mCurrentDevice = deviceModel;
-            } else {
-                Toast.makeText(this, "wait... load...", Toast.LENGTH_SHORT).show();
+    @Override
+    public void onDisplayDevices() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                listView.setAdapter(mDeviceListAdapter);
             }
-        }
+        });
+    }
+
+    @Override
+    public void onDisplayDirectories() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mItemListAdapter.clear();
+                listView.setAdapter(mItemListAdapter);
+            }
+        });
+    }
+
+    @Override
+    public void onDisplayItems(final ArrayList<ItemModel> items) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mItemListAdapter.clear();
+                mItemListAdapter.addAll(items);
+            }
+        });
+    }
+
+    @Override
+    public void onDisplayItemsError(final String error) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mItemListAdapter.clear();
+                mItemListAdapter.add(new CustomListItem(
+                        R.drawable.ic_warning,
+                        getResources().getString(R.string.info_errorlist_folders),
+                        error));
+            }
+        });
+    }
+
+    @Override
+    public void onDeviceAdded(final DeviceModel device) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                int position = mDeviceListAdapter.getPosition(device);
+                if (position >= 0) {
+                    mDeviceListAdapter.remove(device);
+                    mDeviceListAdapter.insert(device, position);
+                } else {
+                    mDeviceListAdapter.add(device);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onDeviceRemoved(final DeviceModel device) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mDeviceListAdapter.remove(device);
+            }
+        });
     }
 }
