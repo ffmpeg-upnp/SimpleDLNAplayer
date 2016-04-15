@@ -8,11 +8,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.view.View;
 import android.widget.Toast;
+
+import com.google.android.libraries.mediaframework.exoplayerextensions.Video;
 
 import org.fourthline.cling.android.AndroidUpnpService;
 import org.fourthline.cling.android.AndroidUpnpServiceImpl;
@@ -47,6 +52,7 @@ public class ContentDirectoryBrowseTaskFragment extends Fragment {
         void onDisplayItemsError(String error);
         void onDeviceAdded(DeviceModel device);
         void onDeviceRemoved(DeviceModel device);
+        void onPlayVideo(Video video);
     }
 
     private Callbacks mCallbacks;
@@ -114,7 +120,7 @@ public class ContentDirectoryBrowseTaskFragment extends Fragment {
             }
         }
 
-        if (model instanceof ItemModel) {
+        else if (model instanceof ItemModel) {
 
             ItemModel item = (ItemModel)model;
 
@@ -131,13 +137,15 @@ public class ContentDirectoryBrowseTaskFragment extends Fragment {
 
             } else {
                 try {
-                    Uri uri = Uri.parse(item.getUrl());
-                    MimeTypeMap mime = MimeTypeMap.getSingleton();
-                    String type = mime.getMimeTypeFromUrl(uri.toString());
-                    Intent intent = new Intent();
-                    intent.setAction(android.content.Intent.ACTION_VIEW);
-                    intent.setDataAndType(uri, type);
-                    startActivity(intent);
+//                    Uri uri = Uri.parse(item.getUrl());
+//                    MimeTypeMap mime = MimeTypeMap.getSingleton();
+//                    String type = mime.getMimeTypeFromUrl(uri.toString());
+//                    Intent intent = new Intent();
+//                    intent.setAction(android.content.Intent.ACTION_VIEW);
+//                    intent.setDataAndType(uri, type);
+//                    startActivity(intent);
+                    Video video = new Video(item.getUrl(), Video.VideoType.MP4);
+                    mCallbacks.onPlayVideo(video);
                 } catch(NullPointerException ex) {
                     Toast.makeText(mActivity, R.string.info_could_not_start_activity, Toast.LENGTH_SHORT)
                             .show();
@@ -147,7 +155,29 @@ public class ContentDirectoryBrowseTaskFragment extends Fragment {
                 }
             }
         }
+
+        else if (model instanceof LocalItemModel) {
+
+            LocalItemModel item = (LocalItemModel)model;
+
+
+                try {
+                    Uri uri = Uri.parse(item.getUrl());
+                    Video video = new Video(item.getUrl(), Video.VideoType.MP4);
+                    mCallbacks.onPlayVideo(video);
+
+
+                } catch(NullPointerException ex) {
+                    Toast.makeText(mActivity, R.string.info_could_not_start_activity, Toast.LENGTH_SHORT)
+                            .show();
+                } catch(ActivityNotFoundException ex) {
+                    Toast.makeText(mActivity, R.string.info_no_handler, Toast.LENGTH_SHORT)
+                            .show();
+                }
+
+        }
     }
+
 
     public Boolean goBack() {
         if (mFolders.empty()) {

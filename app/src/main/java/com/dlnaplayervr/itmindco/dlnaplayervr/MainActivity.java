@@ -5,8 +5,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
+import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,8 +20,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.dlnaplayervr.itmindco.dlnaplayervr.adplayer.ImaPlayer;
+import com.google.android.libraries.mediaframework.exoplayerextensions.Video;
 
 import org.fourthline.cling.android.AndroidUpnpService;
 import org.fourthline.cling.android.AndroidUpnpServiceImpl;
@@ -33,6 +42,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ArrayAdapter<CustomListItem> mDeviceListAdapter;
     private ArrayAdapter<CustomListItem> mItemListAdapter;
     ListView listView;
+
+    private ImaPlayer imaPlayer;
+    private FrameLayout videoPlayerContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +73,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             mFragment.refreshCurrent();
         }
 
+        videoPlayerContainer = (FrameLayout) findViewById(R.id.video_frame);
+
+        dumpVideos(getApplicationContext());
         //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -69,6 +84,55 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //                        .setAction("Action", null).show();
 //            }
 //        });
+    }
+
+    public void dumpVideos(Context context) {
+        Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        String[] projection = { MediaStore.Video.VideoColumns.DATA };
+        Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
+        int vidsCount = 0;
+        if (c != null) {
+            c.moveToFirst();
+            vidsCount = c.getCount();
+            do {
+                Log.d("VIDEO", c.getString(0));
+                mDeviceListAdapter.add(new LocalItemModel(0,"local video",c.getString(0),c.getString(0)));
+            }while (c.moveToNext());
+            c.close();
+        }
+        Log.d("VIDEO", "Total count of videos: " + vidsCount);
+    }
+
+    public void createImaPlayer(Video videoListItem) {
+        if (imaPlayer != null) {
+            imaPlayer.release();
+        }
+
+        // If there was previously a video player in the container, remove it.
+        videoPlayerContainer.removeAllViews();
+
+        //String adTagUrl = videoListItem.adUrl;
+        //String videoTitle = videoListItem.title;
+
+        imaPlayer = new ImaPlayer(this,
+                videoPlayerContainer,
+                videoListItem,
+                "my",
+                null);
+        //imaPlayer.setFullscreenCallback(this);
+
+        //Resources res = getResources();
+
+        // Customize the UI of the video player.
+
+        // Set a logo (an Android icon will be displayed in the top left)
+        //Drawable logo = res.getDrawable(R.drawable.gmf_icon);
+        //imaPlayer.setLogoImage(logo);
+
+
+
+        // Now that the player is set up, let's start playing.
+        imaPlayer.play();
     }
 
     @Override
@@ -208,6 +272,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void run() {
                 mDeviceListAdapter.remove(device);
+            }
+        });
+    }
+
+    @Override
+    public void onPlayVideo(final Video video) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                createImaPlayer(video);
             }
         });
     }

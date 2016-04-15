@@ -36,4 +36,8 @@ dependencies {
     compile 'org.eclipse.jetty:jetty-server:8.1.8.v20121106'
     compile 'org.eclipse.jetty:jetty-servlet:8.1.8.v20121106'
     compile 'org.eclipse.jetty:jetty-client:8.1.8.v20121106'
+    compile 'com.google.android.libraries.mediaframework:mediaframework:0.2.1'
+    compile 'com.google.android.gms:play-services-ads:8.1.0'
+    //    compile 'com.google.android.exoplayer:exoplayer:r1.5.7'
+    compile files('libs/ima-android-sdk-v3-3.2.1.jar')
 }
