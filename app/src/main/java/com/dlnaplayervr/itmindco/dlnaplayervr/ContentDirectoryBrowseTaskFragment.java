@@ -144,7 +144,7 @@ public class ContentDirectoryBrowseTaskFragment extends Fragment {
 //                    intent.setAction(android.content.Intent.ACTION_VIEW);
 //                    intent.setDataAndType(uri, type);
 //                    startActivity(intent);
-                    Video video = new Video(item.getUrl(), Video.VideoType.MP4);
+                    Video video = new Video(item.getUrl(), Video.VideoType.OTHER);
                     mCallbacks.onPlayVideo(video);
                 } catch(NullPointerException ex) {
                     Toast.makeText(mActivity, R.string.info_could_not_start_activity, Toast.LENGTH_SHORT)
@@ -163,7 +163,7 @@ public class ContentDirectoryBrowseTaskFragment extends Fragment {
 
                 try {
                     Uri uri = Uri.parse(item.getUrl());
-                    Video video = new Video(item.getUrl(), Video.VideoType.MP4);
+                    Video video = new Video(item.getUrl(), Video.VideoType.OTHER);
                     mCallbacks.onPlayVideo(video);
 
 
