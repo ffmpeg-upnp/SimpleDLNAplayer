@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +18,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -34,9 +38,15 @@ import org.fourthline.cling.model.meta.Service;
 import org.fourthline.cling.transport.Router;
 import org.fourthline.cling.transport.RouterException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, ContentDirectoryBrowseTaskFragment.Callbacks {
+import tv.danmaku.ijk.media.player.AndroidMediaPlayer;
+import tv.danmaku.ijk.media.player.IMediaPlayer;
+
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener,
+        ContentDirectoryBrowseTaskFragment.Callbacks,
+        SurfaceHolder.Callback {
 
     private ContentDirectoryBrowseTaskFragment mFragment;
     private ArrayAdapter<CustomListItem> mDeviceListAdapter;
@@ -44,7 +54,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     ListView listView;
 
     private ImaPlayer imaPlayer;
-    private FrameLayout videoPlayerContainer;
+    AndroidMediaPlayer ijkPlayer;
+    SurfaceHolder holder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         mDeviceListAdapter = new CustomListAdapter(this);
         mItemListAdapter = new CustomListAdapter(this);
+
 
         listView = (ListView)findViewById(R.id.listView);
          if (listView != null) {
@@ -73,7 +85,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             mFragment.refreshCurrent();
         }
 
-        videoPlayerContainer = (FrameLayout) findViewById(R.id.video_frame);
+        ijkPlayer = new AndroidMediaPlayer();
+        SurfaceView videoPlayerContainer = (SurfaceView) findViewById(R.id.video_frame);
+
+        holder = videoPlayerContainer.getHolder();
+        holder.addCallback(this);
 
         dumpVideos(getApplicationContext());
         //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -109,16 +125,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
 
         // If there was previously a video player in the container, remove it.
-        videoPlayerContainer.removeAllViews();
+        //videoPlayerContainer.removeAllViews();
 
         //String adTagUrl = videoListItem.adUrl;
         //String videoTitle = videoListItem.title;
 
-        imaPlayer = new ImaPlayer(this,
-                videoPlayerContainer,
-                videoListItem,
-                "my",
-                null);
+//        imaPlayer = new ImaPlayer(this,
+//                videoPlayerContainer,
+//                videoListItem,
+//                "my",
+//                null);
         //imaPlayer.setFullscreenCallback(this);
 
         //Resources res = getResources();
@@ -133,6 +149,32 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // Now that the player is set up, let's start playing.
         imaPlayer.play();
+    }
+
+    public void createIjkPlayer(Video videoListItem) throws IOException {
+        if (ijkPlayer != null) {
+            //ijkPlayer.release();
+        }
+
+        //videoPlayerContainer.removeAllViews();
+
+
+        //Surface surface = videoPlayerContainer.getHolder().getSurface();
+        //ijkPlayer.setSurface(surface);
+
+        //holder.setFixedSize(100,100);
+        //holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        ijkPlayer.setDataSource(videoListItem.getUrl());
+        //ijkPlayer.setDisplay(holder);
+        ijkPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(IMediaPlayer mp) {
+                mp.start();
+            }
+        });
+
+        ijkPlayer.prepareAsync();
+
     }
 
     @Override
@@ -281,8 +323,29 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                createImaPlayer(video);
+                try {
+                    createIjkPlayer(video);
+                } catch (IOException e) {
+                    e.printStackTrace();
+
+                }
             }
         });
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder surfaceHolder) {
+        Log.d("","");
+        ijkPlayer.setDisplay(surfaceHolder);
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+
     }
 }
