@@ -12,13 +12,12 @@
    <SurfaceView
         android:id="@+id/video_frame"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@android:color/background_dark"/>
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:id="@+id/listView"
         />
