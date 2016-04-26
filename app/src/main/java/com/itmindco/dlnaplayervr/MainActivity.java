@@ -1,48 +1,25 @@
 package com.itmindco.dlnaplayervr;
 
 import android.Manifest;
-import android.app.FragmentManager;
-import android.content.Context;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
-import com.itmindco.dlnaplayervr.Models.DeviceModel;
-import com.itmindco.dlnaplayervr.Models.ItemModel;
-import com.itmindco.dlnaplayervr.Models.LocalItemModel;
-import com.itmindco.dlnaplayervr.adplayer.ImaPlayer;
-import com.google.android.libraries.mediaframework.exoplayerextensions.Video;
+import com.itmindco.dlnaplayervr.Fragments.VideoItemFragment;
+import com.itmindco.dlnaplayervr.Fragments.VideoPlayerFragment;
+import com.itmindco.dlnaplayervr.Models.VideoListContent;
+import com.itmindco.dlnaplayervr.Models.VideoListItem;
 
-import java.io.IOException;
-import java.util.ArrayList;
+public class MainActivity extends AppCompatActivity implements VideoItemFragment.OnListFragmentInteractionListener {
 
-import tv.danmaku.ijk.media.player.AndroidMediaPlayer;
-import tv.danmaku.ijk.media.player.IMediaPlayer;
-
-public class MainActivity extends AppCompatActivity
-         {
-
-    private ContentDirectoryBrowseTaskFragment mFragment;
-    private ArrayAdapter<CustomListItem> mDeviceListAdapter;
-    private ArrayAdapter<CustomListItem> mItemListAdapter;
-    ListView listView;
-
-
+    VideoItemFragment videoItemFragment;
+    VideoPlayerFragment videoPlayerFragment;
     int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
 
     @Override
@@ -52,30 +29,6 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-//        FragmentManager fragmentManager = getFragmentManager();
-//        mFragment = (ContentDirectoryBrowseTaskFragment)fragmentManager.findFragmentByTag("task");
-//
-//        mDeviceListAdapter = new CustomListAdapter(this);
-//        mItemListAdapter = new CustomListAdapter(this);
-
-
-//        listView = (ListView)findViewById(R.id.listView);
-//         if (listView != null) {
-//            listView.setAdapter(mDeviceListAdapter);
-//            listView.setOnItemClickListener(MainActivity.this);
-//        }
-//
-//        if (mFragment == null) {
-//            mFragment = new ContentDirectoryBrowseTaskFragment();
-//            fragmentManager.beginTransaction().add(mFragment, "task").commit();
-//        } else {
-//            mFragment.refreshDevices();
-//            mFragment.refreshCurrent();
-//        }
-
-
-
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -84,23 +37,16 @@ public class MainActivity extends AppCompatActivity
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
             } else {
-
-                // No explanation needed, we can request the permission.
-
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
-
-                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
             }
         }
+
+
+        videoItemFragment = (VideoItemFragment) getSupportFragmentManager().findFragmentById(R.id.video_list);
+        videoPlayerFragment = (VideoPlayerFragment) getSupportFragmentManager().findFragmentById(R.id.video_player_fragment);
 
         //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
@@ -113,8 +59,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -123,8 +67,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        if (mFragment.goBack())
-            super.onBackPressed();
+        //if (mFragment.goBack())
+        super.onBackPressed();
     }
 
     @Override
@@ -151,8 +95,8 @@ public class MainActivity extends AppCompatActivity
 
         switch (item.getItemId()) {
             case 0:
-                mFragment.refreshDevices();
-                mFragment.refreshCurrent();
+                //mFragment.refreshDevices();
+                //mFragment.refreshCurrent();
 
                 break;
             case 1:
@@ -178,98 +122,16 @@ public class MainActivity extends AppCompatActivity
         //return super.onOptionsItemSelected(item);
     }
 
-
-//    @Override
-//    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//        mFragment.navigateTo(adapterView.getItemAtPosition(i));
-//    }
-//
-//    @Override
-//    public void onDisplayDevices() {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                listView.setAdapter(mDeviceListAdapter);
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public void onDisplayDirectories() {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                mItemListAdapter.clear();
-//                listView.setAdapter(mItemListAdapter);
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public void onDisplayItems(final ArrayList<ItemModel> items) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                mItemListAdapter.clear();
-//                mItemListAdapter.addAll(items);
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public void onDisplayItemsError(final String error) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                mItemListAdapter.clear();
-//                mItemListAdapter.add(new CustomListItem(
-//                        R.drawable.ic_warning,
-//                        getResources().getString(R.string.info_errorlist_folders),
-//                        error));
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public void onDeviceAdded(final DeviceModel device) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                int position = mDeviceListAdapter.getPosition(device);
-//                if (position >= 0) {
-//                    mDeviceListAdapter.remove(device);
-//                    mDeviceListAdapter.insert(device, position);
-//                } else {
-//                    mDeviceListAdapter.add(device);
-//                }
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public void onDeviceRemoved(final DeviceModel device) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                mDeviceListAdapter.remove(device);
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public void onPlayVideo(final Video video) {
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    createIjkPlayer(video);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//
-//                }
-//            }
-//        });
-//    }
-
-
+    @Override
+    public void onListFragmentInteraction(VideoListItem item) {
+        switch (item.type){
+            case LOCALCONTENT:
+                VideoListContent.FillLocalVideos(this);
+                videoItemFragment.UpdateList();
+                break;
+            case ITEM:
+                //play video
+                break;
+        }
+    }
 }

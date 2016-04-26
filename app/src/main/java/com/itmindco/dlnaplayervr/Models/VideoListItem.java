@@ -20,9 +20,10 @@ public class VideoListItem {
         return title;
     }
 
-    enum TypeListItem{
+    public enum TypeListItem{
         DIRECTORY,
         ITEM,
-        DEVICE
+        DEVICE,
+        LOCALCONTENT
     }
 }

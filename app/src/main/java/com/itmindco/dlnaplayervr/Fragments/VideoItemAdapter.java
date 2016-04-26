@@ -33,8 +33,8 @@ public class VideoItemAdapter extends RecyclerView.Adapter<VideoItemAdapter.View
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).url);
-        holder.mContentView.setText(mValues.get(position).title);
+        holder.mIdView.setText(mValues.get(position).title);
+        holder.mContentView.setText(mValues.get(position).details);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override

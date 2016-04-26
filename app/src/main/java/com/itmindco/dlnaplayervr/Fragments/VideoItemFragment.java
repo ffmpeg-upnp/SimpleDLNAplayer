@@ -2,6 +2,7 @@ package com.itmindco.dlnaplayervr.Fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,6 +21,7 @@ import java.util.List;
 public class VideoItemFragment extends Fragment {
 
     private OnListFragmentInteractionListener mListener;
+    VideoItemAdapter adapter;
 
     public VideoItemFragment() {
     }
@@ -44,7 +46,8 @@ public class VideoItemFragment extends Fragment {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            recyclerView.setAdapter(new VideoItemAdapter(VideoListContent.ITEMS, mListener));
+            adapter = new VideoItemAdapter(VideoListContent.ITEMS, mListener);
+            recyclerView.setAdapter(adapter);
 
         }
         return view;
@@ -68,8 +71,12 @@ public class VideoItemFragment extends Fragment {
         mListener = null;
     }
 
+    @UiThread
+    public void UpdateList(){
+        adapter.notifyDataSetChanged();
+    }
+
     public interface OnListFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onListFragmentInteraction(VideoListItem item);
     }
 }

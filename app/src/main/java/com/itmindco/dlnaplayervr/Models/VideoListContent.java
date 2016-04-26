@@ -20,7 +20,9 @@ public class VideoListContent {
 
     public static final Map<String, VideoListItem> ITEM_MAP = new HashMap<String, VideoListItem>();
 
-    private static final int COUNT = 25;
+    static {
+        addItem(new VideoListItem("localvideo","Local","", VideoListItem.TypeListItem.LOCALCONTENT));
+    }
 
     private static void addItem(VideoListItem item) {
         ITEMS.add(item);
@@ -37,6 +39,7 @@ public class VideoListContent {
     }
 
     public static void FillLocalVideos(Context context){
+        ITEMS.clear();
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(context,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -54,7 +57,7 @@ public class VideoListContent {
             vidsCount = c.getCount();
             do {
                 //Log.d("VIDEO", c.getString(0));
-                addItem(new VideoListItem(c.getString(0),c.getString(1),"", VideoListItem.TypeListItem.ITEM));
+                addItem(new VideoListItem(c.getString(0),c.getString(0),"", VideoListItem.TypeListItem.ITEM));
             }while (c.moveToNext());
             c.close();
         }
