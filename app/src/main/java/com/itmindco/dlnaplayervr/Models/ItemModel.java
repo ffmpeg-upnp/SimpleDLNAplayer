@@ -1,7 +1,11 @@
-package com.dlnaplayervr.itmindco.dlnaplayervr;
+package com.itmindco.dlnaplayervr.Models;
 
 import android.content.res.Resources;
 import android.net.Uri;
+
+import com.itmindco.dlnaplayervr.CustomListItem;
+import com.itmindco.dlnaplayervr.MimeTypeMap;
+import com.itmindco.dlnaplayervr.R;
 
 import org.fourthline.cling.model.meta.Service;
 import org.fourthline.cling.support.model.DIDLObject;

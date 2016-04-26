@@ -1,4 +1,4 @@
-package com.dlnaplayervr.itmindco.dlnaplayervr;
+package com.itmindco.dlnaplayervr;
 
 import android.content.Context;
 import android.content.SharedPreferences;

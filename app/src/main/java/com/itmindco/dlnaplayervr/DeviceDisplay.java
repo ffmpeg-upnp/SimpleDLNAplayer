@@ -1,11 +1,8 @@
-package com.dlnaplayervr.itmindco.dlnaplayervr;
+package com.itmindco.dlnaplayervr;
 
 import org.fourthline.cling.model.meta.Device;
 import org.fourthline.cling.model.meta.Service;
 
-/**
- * Created by Kulik_ia on 14.04.2016.
- */
 public class DeviceDisplay {
     Device device;
 

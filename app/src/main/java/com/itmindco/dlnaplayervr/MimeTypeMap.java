@@ -14,7 +14,7 @@
 * limitations under the License.
 */
 
-package com.dlnaplayervr.itmindco.dlnaplayervr;
+package com.itmindco.dlnaplayervr;
 
 import java.util.HashMap;
 import java.util.regex.Pattern;

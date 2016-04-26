@@ -1,4 +1,4 @@
-package com.dlnaplayervr.itmindco.dlnaplayervr;
+package com.itmindco.dlnaplayervr;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -8,15 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.view.View;
 import android.widget.Toast;
 
+import com.itmindco.dlnaplayervr.Models.DeviceModel;
+import com.itmindco.dlnaplayervr.Models.ItemModel;
+import com.itmindco.dlnaplayervr.Models.LocalItemModel;
 import com.google.android.libraries.mediaframework.exoplayerextensions.Video;
 
 import org.fourthline.cling.android.AndroidUpnpService;

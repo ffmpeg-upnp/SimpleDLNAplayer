@@ -1,4 +1,4 @@
-package com.dlnaplayervr.itmindco.dlnaplayervr;
+package com.itmindco.dlnaplayervr;
 
 import org.junit.Test;
 

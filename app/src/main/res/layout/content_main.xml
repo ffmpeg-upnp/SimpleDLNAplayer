@@ -5,20 +5,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.dlnaplayervr.itmindco.dlnaplayervr.MainActivity"
+    tools:context="com.itmindco.dlnaplayervr.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <!--<FrameLayout-->
-   <SurfaceView
-        android:id="@+id/video_frame"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+   <fragment
+       android:name="com.itmindco.dlnaplayervr.Fragments.VideoPlayerFragment"
+       android:id="@+id/video_player_fragment"
+       android:layout_weight="1"
+       android:layout_width="match_parent"
+       android:layout_height="0dp"
+       tools:layout="@layout/fragment_video_player" />
 
-    <ListView
+    <fragment
+        android:name="com.itmindco.dlnaplayervr.Fragments.VideoItemFragment"
+        android:id="@+id/video_list"
+        android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:id="@+id/listView"
-        />
+        tools:layout="@layout/fragment_videoitem_list" />
+
 </LinearLayout>

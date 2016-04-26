@@ -1,4 +1,4 @@
-package com.dlnaplayervr.itmindco.dlnaplayervr.adplayer;
+package com.itmindco.dlnaplayervr.adplayer;
 
 import android.app.Activity;
 import android.graphics.Color;

@@ -1,4 +1,6 @@
-package com.dlnaplayervr.itmindco.dlnaplayervr;
+package com.itmindco.dlnaplayervr.Models;
+
+import com.itmindco.dlnaplayervr.CustomListItem;
 
 public class LocalItemModel extends CustomListItem {
 
