@@ -10,6 +10,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.MediaController;
 
 import com.google.android.libraries.mediaframework.exoplayerextensions.Video;
 import com.itmindco.dlnaplayervr.R;
@@ -28,12 +29,13 @@ import tv.danmaku.ijk.media.player.IMediaPlayer;
  * Use the {@link VideoPlayerFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callback {
+public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callback,MediaController.MediaPlayerControl {
     private static final String ARG_VIDEOURL = "videoUrl";
 
     private String videoUrl;
     IMediaPlayer player;
     SurfaceHolder holder;
+    MediaController mediaController;
 
     private OnFragmentInteractionListener mListener;
 
@@ -66,7 +68,12 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
         View view = inflater.inflate(R.layout.fragment_video_player, container, false);
         //ijkPlayer = new AndroidMediaPlayer();
         SurfaceView videoPlayerContainer = (SurfaceView) view.findViewById(R.id.surfaceView);
-
+        videoPlayerContainer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mediaController.show();
+            }
+        });
         holder = videoPlayerContainer.getHolder();
         holder.addCallback(this);
         return view;
@@ -97,11 +104,16 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
 
 
     public void PlayVideo(String videoUrl) throws IOException {
+        player.reset();
         player.setDataSource(videoUrl);
         //ijkPlayer.setDisplay(holder);
+        mediaController = new MediaController(getContext());
+        mediaController.setMediaPlayer(this);
+        mediaController.setAnchorView(getView());
         player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(IMediaPlayer mp) {
+                mediaController.show();
                 mp.start();
             }
         });
@@ -156,6 +168,61 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
 
+    }
+
+    @Override
+    public void start() {
+        player.start();
+    }
+
+    @Override
+    public void pause() {
+        player.pause();
+    }
+
+    @Override
+    public int getDuration() {
+        return (int)player.getDuration();
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return (int)player.getCurrentPosition();
+    }
+
+    @Override
+    public void seekTo(int i) {
+        player.seekTo(i);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return player.isPlaying();
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
     }
 
     public interface OnFragmentInteractionListener {
