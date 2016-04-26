@@ -4,24 +4,29 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.itmindco.dlnaplayervr.Models.DeviceModel;
+import com.itmindco.dlnaplayervr.Models.ItemModel;
 import com.itmindco.dlnaplayervr.Models.VideoListContent;
 import com.itmindco.dlnaplayervr.Models.VideoListItem;
 import com.itmindco.dlnaplayervr.R;
+import com.itmindco.dlnaplayervr.UpnpService.ContentDirectoryBrowse;
 
-import java.util.List;
+import java.util.ArrayList;
 
 
-public class VideoItemFragment extends Fragment {
+
+public class VideoItemFragment extends Fragment implements ContentDirectoryBrowse.Callbacks {
 
     private OnListFragmentInteractionListener mListener;
     VideoItemAdapter adapter;
+    ContentDirectoryBrowse contentDirectoryBrowse;
+
 
     public VideoItemFragment() {
     }
@@ -63,17 +68,52 @@ public class VideoItemFragment extends Fragment {
             throw new RuntimeException(context.toString()
                     + " must implement OnListFragmentInteractionListener");
         }
+        if(contentDirectoryBrowse == null) {
+            contentDirectoryBrowse = new ContentDirectoryBrowse(this);
+        }
+        contentDirectoryBrowse.bindServiceConnection(context);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        contentDirectoryBrowse.unbindServiceConnection(getContext());
     }
 
     @UiThread
     public void UpdateList(){
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onDisplayDevices() {
+
+    }
+
+    @Override
+    public void onDisplayDirectories() {
+
+    }
+
+    @Override
+    public void onDisplayItems(ArrayList<ItemModel> items) {
+
+    }
+
+    @Override
+    public void onDisplayItemsError(String error) {
+
+    }
+
+    @Override
+    public void onDeviceAdded(DeviceModel device) {
+
+    }
+
+    @Override
+    public void onDeviceRemoved(DeviceModel device) {
+
     }
 
     public interface OnListFragmentInteractionListener {

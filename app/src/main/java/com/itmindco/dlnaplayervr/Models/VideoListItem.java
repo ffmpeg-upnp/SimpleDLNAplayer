@@ -24,6 +24,7 @@ public class VideoListItem {
         DIRECTORY,
         ITEM,
         DEVICE,
-        LOCALCONTENT
+        LOCALCONTENT,
+        ROOT
     }
 }

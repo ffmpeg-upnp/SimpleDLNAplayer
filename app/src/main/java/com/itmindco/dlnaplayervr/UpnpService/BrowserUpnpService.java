@@ -1,4 +1,4 @@
-package com.itmindco.dlnaplayervr;
+package com.itmindco.dlnaplayervr.UpnpService;
 import org.fourthline.cling.UpnpServiceConfiguration;
 import org.fourthline.cling.android.AndroidUpnpServiceConfiguration;
 import org.fourthline.cling.android.AndroidUpnpServiceImpl;

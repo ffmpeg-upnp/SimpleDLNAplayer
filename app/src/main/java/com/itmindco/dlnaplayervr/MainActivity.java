@@ -17,12 +17,16 @@ import com.itmindco.dlnaplayervr.Models.VideoListContent;
 import com.itmindco.dlnaplayervr.Models.VideoListItem;
 
 import java.io.IOException;
+import java.util.Stack;
 
 public class MainActivity extends AppCompatActivity implements VideoItemFragment.OnListFragmentInteractionListener {
 
     VideoItemFragment videoItemFragment;
     VideoPlayerFragment videoPlayerFragment;
     int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
+    //стек для возвращения назад
+    private Stack<VideoListItem> backStack = new Stack<VideoListItem>();
+    VideoListItem currentItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,9 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
         videoItemFragment = (VideoItemFragment) getSupportFragmentManager().findFragmentById(R.id.video_list);
         videoPlayerFragment = (VideoPlayerFragment) getSupportFragmentManager().findFragmentById(R.id.video_player_fragment);
 
+        currentItem = new VideoListItem("root","root","root", VideoListItem.TypeListItem.ROOT);
+        backStack.push(currentItem);
+
         //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -69,8 +76,14 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
 
     @Override
     public void onBackPressed() {
-        //if (mFragment.goBack())
-        super.onBackPressed();
+        if(backStack.size()>1) {
+            backStack.pop();
+            currentItem = backStack.peek();
+            refreshVideoItemList();
+        }
+        else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -128,8 +141,9 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
     public void onListFragmentInteraction(VideoListItem item) {
         switch (item.type){
             case LOCALCONTENT:
-                VideoListContent.FillLocalVideos(this);
-                videoItemFragment.UpdateList();
+                currentItem = item;
+                backStack.push(currentItem);
+                refreshVideoItemList();
                 break;
             case ITEM:
                 //play video
@@ -141,5 +155,20 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
                 }
                 break;
         }
+    }
+
+    private void refreshVideoItemList(){
+        switch (currentItem.type){
+            case LOCALCONTENT:
+                VideoListContent.fillLocalVideos(this);
+
+                break;
+            case ROOT:
+                VideoListContent.fillRoot();
+                break;
+            case DIRECTORY:
+                break;
+        }
+        videoItemFragment.UpdateList();
     }
 }

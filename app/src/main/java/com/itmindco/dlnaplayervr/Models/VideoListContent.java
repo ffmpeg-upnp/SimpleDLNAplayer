@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +37,7 @@ public class VideoListContent {
         return builder.toString();
     }
 
-    public static void FillLocalVideos(Context context){
+    public static void fillLocalVideos(Context context){
         ITEMS.clear();
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(context,
@@ -64,5 +63,9 @@ public class VideoListContent {
         //Log.d("VIDEO", "Total count of videos: " + vidsCount);
     }
 
+    public static void fillRoot(){
+        ITEMS.clear();
+        addItem(new VideoListItem("localvideo","Local","", VideoListItem.TypeListItem.LOCALCONTENT));
+    }
 
 }
