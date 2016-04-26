@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 
 import com.google.android.libraries.mediaframework.exoplayerextensions.Video;
 import com.itmindco.dlnaplayervr.R;
-import com.itmindco.dlnaplayervr.adplayer.ImaPlayer;
 
 import java.io.IOException;
 
@@ -33,8 +32,7 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
     private static final String ARG_VIDEOURL = "videoUrl";
 
     private String videoUrl;
-    private ImaPlayer imaPlayer;
-    AndroidMediaPlayer ijkPlayer;
+    IMediaPlayer player;
     SurfaceHolder holder;
 
     private OnFragmentInteractionListener mListener;
@@ -58,13 +56,15 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
             videoUrl = getArguments().getString(ARG_VIDEOURL);
         }
 
+        player = new AndroidMediaPlayer();
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_video_player, container, false);
-        ijkPlayer = new AndroidMediaPlayer();
+        //ijkPlayer = new AndroidMediaPlayer();
         SurfaceView videoPlayerContainer = (SurfaceView) view.findViewById(R.id.surfaceView);
 
         holder = videoPlayerContainer.getHolder();
@@ -72,8 +72,7 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
         return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }
@@ -97,10 +96,22 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
     }
 
 
+    public void PlayVideo(String videoUrl) throws IOException {
+        player.setDataSource(videoUrl);
+        //ijkPlayer.setDisplay(holder);
+        player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(IMediaPlayer mp) {
+                mp.start();
+            }
+        });
+
+        player.prepareAsync();
+    }
     public void createImaPlayer(Video videoListItem) {
-        if (imaPlayer != null) {
-            imaPlayer.release();
-        }
+        //if (imaPlayer != null) {
+        //    imaPlayer.release();
+        //}
 
         // If there was previously a video player in the container, remove it.
         //videoPlayerContainer.removeAllViews();
@@ -126,39 +137,15 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
 
 
         // Now that the player is set up, let's start playing.
-        imaPlayer.play();
+        //imaPlayer.play();
     }
 
-    public void createIjkPlayer(Video videoListItem) throws IOException {
-        if (ijkPlayer != null) {
-            //ijkPlayer.release();
-        }
 
-        //videoPlayerContainer.removeAllViews();
-
-
-        //Surface surface = videoPlayerContainer.getHolder().getSurface();
-        //ijkPlayer.setSurface(surface);
-
-        //holder.setFixedSize(100,100);
-        //holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        ijkPlayer.setDataSource(videoListItem.getUrl());
-        //ijkPlayer.setDisplay(holder);
-        ijkPlayer.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(IMediaPlayer mp) {
-                mp.start();
-            }
-        });
-
-        ijkPlayer.prepareAsync();
-
-    }
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         Log.d("","");
-        ijkPlayer.setDisplay(surfaceHolder);
+        player.setDisplay(surfaceHolder);
     }
 
     @Override

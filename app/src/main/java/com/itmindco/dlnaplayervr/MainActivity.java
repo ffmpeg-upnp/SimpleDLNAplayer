@@ -4,10 +4,10 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -15,6 +15,8 @@ import com.itmindco.dlnaplayervr.Fragments.VideoItemFragment;
 import com.itmindco.dlnaplayervr.Fragments.VideoPlayerFragment;
 import com.itmindco.dlnaplayervr.Models.VideoListContent;
 import com.itmindco.dlnaplayervr.Models.VideoListItem;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements VideoItemFragment.OnListFragmentInteractionListener {
 
@@ -131,6 +133,12 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
                 break;
             case ITEM:
                 //play video
+                try {
+                    videoPlayerFragment.PlayVideo(item.url);
+                }
+                catch (IOException ex){
+                    Log.e("DLNAPlayer",ex.getLocalizedMessage());
+                }
                 break;
         }
     }
