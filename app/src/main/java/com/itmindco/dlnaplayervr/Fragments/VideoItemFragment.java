@@ -17,6 +17,8 @@ import com.itmindco.dlnaplayervr.Models.VideoListItem;
 import com.itmindco.dlnaplayervr.R;
 import com.itmindco.dlnaplayervr.UpnpService.ContentDirectoryBrowse;
 
+import org.fourthline.cling.model.meta.Device;
+
 import java.util.ArrayList;
 
 
@@ -83,38 +85,30 @@ public class VideoItemFragment extends Fragment implements ContentDirectoryBrows
 
     @UiThread
     public void UpdateList(){
-        adapter.notifyDataSetChanged();
+        getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }});
+
+    }
+
+    public void findDevices(){
+        contentDirectoryBrowse.refreshDevices();
+    }
+
+    public void showContent(VideoListItem item){
+        DeviceModel deviceModel = (DeviceModel) item;
+        Device device = deviceModel.getDevice();
+        if(device.isFullyHydrated()) {
+            contentDirectoryBrowse.showContent(deviceModel.getContentDirectory(), "0");
+        }
     }
 
     @Override
-    public void onDisplayDevices() {
-
+    public void onRefresh() {
+        UpdateList();
     }
 
-    @Override
-    public void onDisplayDirectories() {
-
-    }
-
-    @Override
-    public void onDisplayItems(ArrayList<ItemModel> items) {
-
-    }
-
-    @Override
-    public void onDisplayItemsError(String error) {
-
-    }
-
-    @Override
-    public void onDeviceAdded(DeviceModel device) {
-
-    }
-
-    @Override
-    public void onDeviceRemoved(DeviceModel device) {
-
-    }
 
     public interface OnListFragmentInteractionListener {
         void onListFragmentInteraction(VideoListItem item);

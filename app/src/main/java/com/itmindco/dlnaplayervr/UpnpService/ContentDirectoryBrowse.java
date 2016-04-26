@@ -15,6 +15,7 @@ import com.itmindco.dlnaplayervr.Models.LocalItemModel;
 
 import org.fourthline.cling.android.AndroidUpnpService;
 import org.fourthline.cling.android.AndroidUpnpServiceImpl;
+import org.fourthline.cling.binding.xml.Descriptor;
 import org.fourthline.cling.model.meta.Device;
 import org.fourthline.cling.model.meta.Service;
 
@@ -24,20 +25,15 @@ import java.util.Stack;
 public class ContentDirectoryBrowse {
 
     public interface Callbacks {
-        void onDisplayDevices();
-        void onDisplayDirectories();
-        void onDisplayItems(ArrayList<ItemModel> items);
-        void onDisplayItemsError(String error);
-        void onDeviceAdded(DeviceModel device);
-        void onDeviceRemoved(DeviceModel device);
+        void onRefresh();
+        //void onDisplayDevices();
+        //void onDisplayDirectories();
     }
 
     private Callbacks mCallbacks;
     private BrowseRegistryListener mListener;
     private AndroidUpnpService mService;
-    private Stack<ItemModel> mFolders = new Stack<ItemModel>();
     private Boolean mIsShowingDeviceList = true;
-    private DeviceModel mCurrentDevice = null;
 
     public ContentDirectoryBrowse(Callbacks mCallbacks){
         this.mCallbacks = mCallbacks;
@@ -63,12 +59,11 @@ public class ContentDirectoryBrowse {
                     mService.getControlPoint().execute(
                             new CustomContentBrowseActionCallback(conDir, "0"));
 
-                if (mCallbacks != null)
-                    mCallbacks.onDisplayDirectories();
+                //if (mCallbacks != null)
+                //    mCallbacks.onDisplayDirectories();
 
                 mIsShowingDeviceList = false;
 
-                mCurrentDevice = deviceModel;
             } else {
                 //Toast.makeText(mActivity, R.string.info_still_loading, Toast.LENGTH_SHORT)
                 //    .show();
@@ -80,11 +75,7 @@ public class ContentDirectoryBrowse {
             ItemModel item = (ItemModel)model;
 
             if (item.isContainer()) {
-                if (mFolders.isEmpty())
-                    mFolders.push(item);
-                else
-                    if (mFolders.peek().getId() != item.getId())
-                        mFolders.push(item);
+
 
                 mService.getControlPoint().execute(
                         new CustomContentBrowseActionCallback(item.getService(),
@@ -135,21 +126,21 @@ public class ContentDirectoryBrowse {
 
 
     public Boolean goBack() {
-        if (mFolders.empty()) {
-            if (!mIsShowingDeviceList) {
-                mIsShowingDeviceList = true;
-                if (mCallbacks != null)
-                    mCallbacks.onDisplayDevices();
-            } else {
-                return true;
-            }
-        } else {
-            ItemModel item = mFolders.pop();
-
-            mService.getControlPoint().execute(
-                    new CustomContentBrowseActionCallback(item.getService(),
-                            item.getContainer().getParentID()));
-        }
+//        if (mFolders.empty()) {
+//            if (!mIsShowingDeviceList) {
+//                mIsShowingDeviceList = true;
+//                if (mCallbacks != null)
+//                    mCallbacks.onDisplayDevices();
+//            } else {
+//                return true;
+//            }
+//        } else {
+//            ItemModel item = mFolders.pop();
+//
+//            mService.getControlPoint().execute(
+//                    new CustomContentBrowseActionCallback(item.getService(),
+//                            item.getContainer().getParentID()));
+//        }
 
         return false;
     }
@@ -166,38 +157,23 @@ public class ContentDirectoryBrowse {
         mService.getControlPoint().search();
     }
 
-    public void refreshCurrent() {
-        if (mService == null)
+    //для device вызываем с id = "0"
+    public void showContent(Service service, String id) {
+        if (mService == null || service == null)
             return;
 
-        if (mIsShowingDeviceList != null && mIsShowingDeviceList) {
-            if (mCallbacks != null)
-                mCallbacks.onDisplayDevices();
 
-            mService.getRegistry().removeAllRemoteDevices();
+        mService.getControlPoint().execute(
+                new CustomContentBrowseActionCallback(service, id));
+//            } else {
+//                if (mCurrentDevice != null) {
+//                    Service service = mCurrentDevice.getContentDirectory();
+//                    if (service != null)
+//                        mService.getControlPoint().execute(
+//                            new CustomContentBrowseActionCallback(service, "0"));
+//                }
+//            }
 
-            for (Device device : mService.getRegistry().getDevices())
-                mListener.deviceAdded(device);
-
-            mService.getControlPoint().search();
-        } else {
-            if (!mFolders.empty()) {
-                ItemModel item = mFolders.peek();
-                if (item == null)
-                    return;
-
-                mService.getControlPoint().execute(
-                        new CustomContentBrowseActionCallback(item.getService(),
-                                item.getId()));
-            } else {
-                if (mCurrentDevice != null) {
-                    Service service = mCurrentDevice.getContentDirectory();
-                    if (service != null)
-                        mService.getControlPoint().execute(
-                            new CustomContentBrowseActionCallback(service, "0"));
-                }
-            }
-        }
     }
 
     public Boolean bindServiceConnection(Context context) {

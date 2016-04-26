@@ -2,8 +2,8 @@ package com.itmindco.dlnaplayervr.Models;
 
 public class VideoListItem {
     public final String url;
-    public final String title;
-    public final String details;
+    public String title;
+    public String details;
     public final TypeListItem type;
 
     private int icon;

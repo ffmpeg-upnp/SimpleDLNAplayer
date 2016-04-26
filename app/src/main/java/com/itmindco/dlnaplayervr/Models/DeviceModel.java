@@ -12,15 +12,16 @@ import org.seamless.util.MimeType;
 
 import java.net.URI;
 
-public class DeviceModel extends CustomListItem {
+public class DeviceModel extends VideoListItem {
 
-    private final Device device;
+    private Device device;
 
-    public DeviceModel(int icon, Device device) {
-        super(icon);
+    public DeviceModel(Device device) {
+        super(String.valueOf(device.hashCode()),"","",TypeListItem.DEVICE);
         this.device = device;
-
-        setIconUrl(getIconUrl());
+        this.title = toString();
+        this.details = getDescription();
+        //setIconUrl(getIconUrl());
     }
 
     public String getIconUrl() {
@@ -51,12 +52,7 @@ public class DeviceModel extends CustomListItem {
         return null;
     }
 
-    @Override
-    public String getTitle() {
-        return toString();
-    }
 
-    @Override
     public String getDescription() {
         DeviceDetails details = device.getDetails();
         if (details == null)
@@ -73,7 +69,6 @@ public class DeviceModel extends CustomListItem {
         return manufacturer;
     }
 
-    @Override
     public String getDescription2() {
         DeviceDetails details = device.getDetails();
         if (details == null)
@@ -100,11 +95,6 @@ public class DeviceModel extends CustomListItem {
 
         DeviceModel that = (DeviceModel)o;
         return device.equals(that.device);
-    }
-
-    @Override
-    public int hashCode() {
-        return device.hashCode();
     }
 
     @Override

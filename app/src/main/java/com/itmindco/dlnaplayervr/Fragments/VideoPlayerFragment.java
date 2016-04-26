@@ -59,7 +59,9 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
         }
 
         player = new AndroidMediaPlayer();
-
+        mediaController = new MediaController(getContext());
+        mediaController.setMediaPlayer(this);
+        mediaController.setAnchorView(getView());
     }
 
     @Override
@@ -107,9 +109,7 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
         player.reset();
         player.setDataSource(videoUrl);
         //ijkPlayer.setDisplay(holder);
-        mediaController = new MediaController(getContext());
-        mediaController.setMediaPlayer(this);
-        mediaController.setAnchorView(getView());
+
         player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(IMediaPlayer mp) {

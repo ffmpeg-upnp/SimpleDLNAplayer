@@ -141,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
     public void onListFragmentInteraction(VideoListItem item) {
         switch (item.type){
             case LOCALCONTENT:
+            case DEVICE:
+            case DIRECTORY:
                 currentItem = item;
                 backStack.push(currentItem);
                 refreshVideoItemList();
@@ -165,6 +167,10 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
                 break;
             case ROOT:
                 VideoListContent.fillRoot();
+                videoItemFragment.findDevices();
+                break;
+            case DEVICE:
+                videoItemFragment.showContent(currentItem);
                 break;
             case DIRECTORY:
                 break;

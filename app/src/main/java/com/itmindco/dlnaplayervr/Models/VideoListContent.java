@@ -23,9 +23,19 @@ public class VideoListContent {
         addItem(new VideoListItem("localvideo","Local","", VideoListItem.TypeListItem.LOCALCONTENT));
     }
 
-    private static void addItem(VideoListItem item) {
-        ITEMS.add(item);
-        ITEM_MAP.put(item.url, item);
+    public static void addItem(VideoListItem item) {
+        //if(!ITEM_MAP.containsKey(item.url)) {
+            ITEMS.add(item);
+            ITEM_MAP.put(item.url, item);
+        //}
+    }
+
+    public static void removeItem(String url){
+        VideoListItem item = ITEM_MAP.get(url);
+        if(item!=null){
+            ITEMS.remove(item);
+            ITEM_MAP.remove(url);
+        }
     }
 
     private static String makeDetails(int position) {
@@ -39,6 +49,7 @@ public class VideoListContent {
 
     public static void fillLocalVideos(Context context){
         ITEMS.clear();
+        ITEM_MAP.clear();
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(context,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -65,6 +76,7 @@ public class VideoListContent {
 
     public static void fillRoot(){
         ITEMS.clear();
+        ITEM_MAP.clear();
         addItem(new VideoListItem("localvideo","Local","", VideoListItem.TypeListItem.LOCALCONTENT));
     }
 

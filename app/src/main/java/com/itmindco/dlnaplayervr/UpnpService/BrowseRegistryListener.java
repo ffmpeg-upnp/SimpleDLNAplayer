@@ -1,6 +1,8 @@
 package com.itmindco.dlnaplayervr.UpnpService;
 
 import com.itmindco.dlnaplayervr.Models.DeviceModel;
+import com.itmindco.dlnaplayervr.Models.VideoListContent;
+import com.itmindco.dlnaplayervr.Models.VideoListItem;
 import com.itmindco.dlnaplayervr.R;
 
 import org.fourthline.cling.model.meta.Device;
@@ -53,17 +55,17 @@ public class BrowseRegistryListener extends DefaultRegistryListener {
 
     public void deviceAdded(Device device) {
 
-        DeviceModel deviceModel = new DeviceModel(R.drawable.ic_device, device);
-
-        Service conDir = deviceModel.getContentDirectory();
-        if (conDir != null) {
-                if (mCallbacks != null)
-                    mCallbacks.onDeviceAdded(deviceModel);
+        DeviceModel deviceModel = new DeviceModel(device);
+        if(deviceModel.getContentDirectory()!=null) {
+            VideoListContent.addItem(deviceModel);
+            if (mCallbacks != null)
+                mCallbacks.onRefresh();
         }
     }
 
     public void deviceRemoved(Device device) {
+        VideoListContent.removeItem(String.valueOf(device.hashCode()));
         if (mCallbacks != null)
-            mCallbacks.onDeviceRemoved(new DeviceModel(R.drawable.ic_device, device));
+            mCallbacks.onRefresh();
     }
 }
