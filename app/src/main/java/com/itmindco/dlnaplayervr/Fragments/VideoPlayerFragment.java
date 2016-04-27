@@ -1,14 +1,12 @@
 package com.itmindco.dlnaplayervr.Fragments;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.net.Uri;
+import android.opengl.EGL14;
+import android.opengl.GLES20;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -20,18 +18,17 @@ import com.itmindco.dlnaplayervr.R;
 
 import java.io.IOException;
 
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
+import javax.microedition.khronos.egl.EGLDisplay;
+import javax.microedition.khronos.egl.EGLSurface;
+
 import tv.danmaku.ijk.media.player.AndroidMediaPlayer;
 import tv.danmaku.ijk.media.player.IMediaPlayer;
+import tv.danmaku.ijk.media.player.IjkMediaPlayer;
 
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link VideoPlayerFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link VideoPlayerFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callback,MediaController.MediaPlayerControl {
     private static final String ARG_VIDEOURL = "videoUrl";
 
@@ -39,8 +36,8 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
     IMediaPlayer player;
     SurfaceHolder holder;
     MediaController mediaController;
+    SurfaceView videoPlayerContainer;
 
-    private OnFragmentInteractionListener mListener;
 
     public VideoPlayerFragment() {
         // Required empty public constructor
@@ -61,7 +58,31 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
             videoUrl = getArguments().getString(ARG_VIDEOURL);
         }
 
+        //IjkMediaPlayer ijkMediaPlayer = new IjkMediaPlayer();
         player = new AndroidMediaPlayer();
+//        IjkMediaPlayer.loadLibrariesOnce(null);
+//        IjkMediaPlayer.native_profileBegin("libijkplayer.so");
+//
+//        //    ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 1);
+//
+////                ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec-auto-rotate", 0);
+//
+//
+//        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "mediacodec", 0);
+//
+//
+//        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "opensles", 0);
+//
+//
+//        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "overlay-format", IjkMediaPlayer.SDL_FCC_RV32);
+//
+//        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "framedrop", 1);
+//        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "start-on-prepared", 0);
+//
+//        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "http-detect-range-support", 0);
+//
+//        ijkMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "skip_loop_filter", 48);
+//        player = ijkMediaPlayer;//new AndroidMediaPlayer();
 
     }
 
@@ -70,7 +91,7 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_video_player, container, false);
         //ijkPlayer = new AndroidMediaPlayer();
-        SurfaceView videoPlayerContainer = (SurfaceView) view.findViewById(R.id.surfaceView);
+        videoPlayerContainer = (SurfaceView) view.findViewById(R.id.surfaceView);
         videoPlayerContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,32 +108,37 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
         return view;
     }
 
-     public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
 
+    public void setupPlayer(PlayerType type) {
+        switch (type) {
+            case IJKPLAYER:
+                player = new IjkMediaPlayer();
+
+                break;
+            case ANDROIDMEDIAPLAYER:
+                player = new AndroidMediaPlayer();
+
+                break;
+        }
+        //recreate surface holder
+        videoPlayerContainer.setVisibility(View.INVISIBLE);
+        videoPlayerContainer.setVisibility(View.VISIBLE);
+    }
+
     public void PlayVideo(String videoUrl) throws IOException {
         player.reset();
+
         player.setDataSource(videoUrl);
 
         //mediaController = new MediaController(getContext());
@@ -166,7 +192,6 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        Log.d("","");
         player.setDisplay(surfaceHolder);
     }
 
@@ -180,17 +205,50 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
 
     }
 
+    private void clearSurface(Surface surface) {
+        EGL10 egl = (EGL10) EGLContext.getEGL();
+        EGLDisplay display = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
+        egl.eglInitialize(display, null);
+
+        int[] attribList = {
+                EGL10.EGL_RED_SIZE, 8,
+                EGL10.EGL_GREEN_SIZE, 8,
+                EGL10.EGL_BLUE_SIZE, 8,
+                EGL10.EGL_ALPHA_SIZE, 8,
+                EGL10.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+                EGL10.EGL_NONE, 0,      // placeholder for recordable [@-3]
+                EGL10.EGL_NONE
+        };
+        EGLConfig[] configs = new EGLConfig[1];
+        int[] numConfigs = new int[1];
+        egl.eglChooseConfig(display, attribList, configs, configs.length, numConfigs);
+        EGLConfig config = configs[0];
+        EGLContext context = egl.eglCreateContext(display, config, EGL10.EGL_NO_CONTEXT, new int[]{
+                EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
+                EGL10.EGL_NONE
+        });
+        EGLSurface eglSurface = egl.eglCreateWindowSurface(display, config, surface,
+                new int[]{
+                        EGL14.EGL_NONE
+                });
+
+        egl.eglMakeCurrent(display, eglSurface, eglSurface, context);
+        GLES20.glClearColor(0, 0, 0, 1);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        egl.eglSwapBuffers(display, eglSurface);
+        egl.eglDestroySurface(display, eglSurface);
+        egl.eglMakeCurrent(display, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_SURFACE,
+                EGL10.EGL_NO_CONTEXT);
+        egl.eglDestroyContext(display, context);
+        egl.eglTerminate(display);
+    }
+
     public void reset() {
         if (player != null) {
             player.stop();
             player.reset();
 
-            Canvas canvas = holder.lockCanvas();
-            canvas.drawColor(Color.BLACK, PorterDuff.Mode.CLEAR);
-            // Draw someting
-            holder.unlockCanvasAndPost(canvas);
-            //canvas.drawColor( 0, PorterDuff.Mode.CLEAR );
-
+            clearSurface(holder.getSurface());
         }
     }
 
@@ -254,8 +312,11 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
         return 0;
     }
 
-    public interface OnFragmentInteractionListener {
-         void onFragmentInteraction(Uri uri);
-    }
 
+    public enum PlayerType {
+        MEDIAPLAYER,
+        ANDROIDMEDIAPLAYER,
+        IMAPLAYER,
+        IJKPLAYER
+    }
 }

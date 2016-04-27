@@ -93,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
         //getMenuInflater().inflate(R.menu.menu_main, menu);
         menu.add(0, 0, 0, R.string.searchLAN).setIcon(android.R.drawable.ic_menu_search);
         menu.add(0, 1, 0, R.string.switchRouter).setIcon(android.R.drawable.ic_menu_revert);
+        menu.add(0, 2, 0, "ijkPlayer");
+        menu.add(0, 3, 0, "Android media player");
 
         return true;
     }
@@ -131,6 +133,11 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
 //                        ex.printStackTrace(System.err);
 //                    }
 //                }
+            case 2:
+                videoPlayerFragment.setupPlayer(VideoPlayerFragment.PlayerType.IJKPLAYER);
+                break;
+            case 3:
+                videoPlayerFragment.setupPlayer(VideoPlayerFragment.PlayerType.ANDROIDMEDIAPLAYER);
                 break;
         }
         return false;
