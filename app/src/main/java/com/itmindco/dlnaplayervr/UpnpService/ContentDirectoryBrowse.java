@@ -1,149 +1,50 @@
 package com.itmindco.dlnaplayervr.UpnpService;
 
-import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
 import android.os.IBinder;
 
-import com.google.android.libraries.mediaframework.exoplayerextensions.Video;
-import com.itmindco.dlnaplayervr.Models.DeviceModel;
-import com.itmindco.dlnaplayervr.Models.ItemModel;
-import com.itmindco.dlnaplayervr.Models.LocalItemModel;
+import com.itmindco.dlnaplayervr.Models.VideoListContent;
+import com.itmindco.dlnaplayervr.Models.VideoListItem;
 
 import org.fourthline.cling.android.AndroidUpnpService;
 import org.fourthline.cling.android.AndroidUpnpServiceImpl;
-import org.fourthline.cling.binding.xml.Descriptor;
+import org.fourthline.cling.model.action.ActionException;
+import org.fourthline.cling.model.action.ActionInvocation;
+import org.fourthline.cling.model.message.UpnpResponse;
 import org.fourthline.cling.model.meta.Device;
+import org.fourthline.cling.model.meta.LocalDevice;
+import org.fourthline.cling.model.meta.RemoteDevice;
 import org.fourthline.cling.model.meta.Service;
-
-import java.util.ArrayList;
-import java.util.Stack;
+import org.fourthline.cling.model.types.ErrorCode;
+import org.fourthline.cling.registry.DefaultRegistryListener;
+import org.fourthline.cling.registry.Registry;
+import org.fourthline.cling.support.contentdirectory.callback.Browse;
+import org.fourthline.cling.support.model.BrowseFlag;
+import org.fourthline.cling.support.model.DIDLContent;
+import org.fourthline.cling.support.model.SortCriterion;
+import org.fourthline.cling.support.model.container.Container;
+import org.fourthline.cling.support.model.item.Item;
 
 public class ContentDirectoryBrowse {
 
     public interface Callbacks {
         void onRefresh();
-        //void onDisplayDevices();
-        //void onDisplayDirectories();
+
+        void onError(String msg);
     }
 
     private Callbacks mCallbacks;
     private BrowseRegistryListener mListener;
     private AndroidUpnpService mService;
-    private Boolean mIsShowingDeviceList = true;
 
     public ContentDirectoryBrowse(Callbacks mCallbacks){
         this.mCallbacks = mCallbacks;
         mListener = new BrowseRegistryListener();
-        mListener.setCallbacksListener(this.mCallbacks);
     }
 
-    public void onDestroy() {
-        mCallbacks = null;
-        //unbindServiceConnection();
-    }
-
-    public void navigateTo(Object model) {
-        if (model instanceof DeviceModel) {
-
-            DeviceModel deviceModel = (DeviceModel)model;
-            Device device = deviceModel.getDevice();
-
-            if (device.isFullyHydrated()) {
-                Service conDir = deviceModel.getContentDirectory();
-
-                if (conDir != null)
-                    mService.getControlPoint().execute(
-                            new CustomContentBrowseActionCallback(conDir, "0"));
-
-                //if (mCallbacks != null)
-                //    mCallbacks.onDisplayDirectories();
-
-                mIsShowingDeviceList = false;
-
-            } else {
-                //Toast.makeText(mActivity, R.string.info_still_loading, Toast.LENGTH_SHORT)
-                //    .show();
-            }
-        }
-
-        else if (model instanceof ItemModel) {
-
-            ItemModel item = (ItemModel)model;
-
-            if (item.isContainer()) {
-
-
-                mService.getControlPoint().execute(
-                        new CustomContentBrowseActionCallback(item.getService(),
-                                item.getId()));
-
-            } else {
-                try {
-//                    Uri uri = Uri.parse(item.getUrl());
-//                    MimeTypeMap mime = MimeTypeMap.getSingleton();
-//                    String type = mime.getMimeTypeFromUrl(uri.toString());
-//                    Intent intent = new Intent();
-//                    intent.setAction(android.content.Intent.ACTION_VIEW);
-//                    intent.setDataAndType(uri, type);
-//                    startActivity(intent);
-                    Video video = new Video(item.getUrl(), Video.VideoType.OTHER);
-                    //mCallbacks.onPlayVideo(video);
-                } catch(NullPointerException ex) {
-                    //Toast.makeText(mActivity, R.string.info_could_not_start_activity, Toast.LENGTH_SHORT)
-                    //        .show();
-                } catch(ActivityNotFoundException ex) {
-                    //Toast.makeText(mActivity, R.string.info_no_handler, Toast.LENGTH_SHORT)
-                    //    .show();
-                }
-            }
-        }
-
-        else if (model instanceof LocalItemModel) {
-
-            LocalItemModel item = (LocalItemModel)model;
-
-
-                try {
-                    Uri uri = Uri.parse(item.getUrl());
-                    Video video = new Video(item.getUrl(), Video.VideoType.OTHER);
-                    //mCallbacks.onPlayVideo(video);
-
-
-                } catch(NullPointerException ex) {
-                    //Toast.makeText(mActivity, R.string.info_could_not_start_activity, Toast.LENGTH_SHORT)
-                    //        .show();
-                } catch(ActivityNotFoundException ex) {
-                    //Toast.makeText(mActivity, R.string.info_no_handler, Toast.LENGTH_SHORT)
-                    //        .show();
-                }
-
-        }
-    }
-
-
-    public Boolean goBack() {
-//        if (mFolders.empty()) {
-//            if (!mIsShowingDeviceList) {
-//                mIsShowingDeviceList = true;
-//                if (mCallbacks != null)
-//                    mCallbacks.onDisplayDevices();
-//            } else {
-//                return true;
-//            }
-//        } else {
-//            ItemModel item = mFolders.pop();
-//
-//            mService.getControlPoint().execute(
-//                    new CustomContentBrowseActionCallback(item.getService(),
-//                            item.getContainer().getParentID()));
-//        }
-
-        return false;
-    }
 
     public void refreshDevices() {
         if (mService == null)
@@ -165,14 +66,6 @@ public class ContentDirectoryBrowse {
 
         mService.getControlPoint().execute(
                 new CustomContentBrowseActionCallback(service, id));
-//            } else {
-//                if (mCurrentDevice != null) {
-//                    Service service = mCurrentDevice.getContentDirectory();
-//                    if (service != null)
-//                        mService.getControlPoint().execute(
-//                            new CustomContentBrowseActionCallback(service, "0"));
-//                }
-//            }
 
     }
 
@@ -215,4 +108,110 @@ public class ContentDirectoryBrowse {
         }
     };
 
+    private class BrowseRegistryListener extends DefaultRegistryListener {
+
+        @Override
+        public void remoteDeviceDiscoveryStarted(Registry registry, RemoteDevice device) {
+            deviceAdded(device);
+        }
+
+        @Override
+        public void remoteDeviceDiscoveryFailed(Registry registry, RemoteDevice device, Exception ex) {
+            deviceRemoved(device);
+        }
+
+        @Override
+        public void remoteDeviceAdded(Registry registry, RemoteDevice device) {
+            deviceAdded(device);
+        }
+
+        @Override
+        public void remoteDeviceRemoved(Registry registry, RemoteDevice device) {
+            deviceRemoved(device);
+        }
+
+        @Override
+        public void localDeviceAdded(Registry registry, LocalDevice device) {
+            deviceAdded(device);
+        }
+
+        @Override
+        public void localDeviceRemoved(Registry registry, LocalDevice device) {
+            deviceRemoved(device);
+        }
+
+        public void deviceAdded(Device device) {
+
+            VideoListItem deviceItem = VideoListItem.createForDevice(device);
+            if (deviceItem.getContentDirectory() != null) {
+                VideoListContent.addItem(deviceItem);
+                if (mCallbacks != null)
+                    mCallbacks.onRefresh();
+            }
+        }
+
+        public void deviceRemoved(Device device) {
+            VideoListContent.removeItem(String.valueOf(device.hashCode()));
+            if (mCallbacks != null)
+                mCallbacks.onRefresh();
+        }
+    }
+
+    private class CustomContentBrowseActionCallback extends Browse {
+        private Service service;
+
+        public CustomContentBrowseActionCallback(Service service, String id) {
+            super(service, id, BrowseFlag.DIRECT_CHILDREN, "*", 0, null,
+                    new SortCriterion(true, "dc:title"));
+
+            this.service = service;
+        }
+
+
+        @Override
+        public void received(final ActionInvocation actionInvocation, final DIDLContent didl) {
+
+//        URI usableIcon = item.getFirstPropertyValue(DIDLObject.Property.UPNP.ICON.class);
+//        if (usableIcon != null)
+//            itemModel.setIconUrl(usableIcon.toString());
+
+            //ArrayList<ItemModel> items = new ArrayList<ItemModel>();
+
+            try {
+                VideoListContent.clear();
+                for (Container childContainer : didl.getContainers()) {
+                    VideoListItem item = VideoListItem.createForItem(service, childContainer);
+                    VideoListContent.addItem(item);
+                    //items.add(createItemModel(childContainer));
+                }
+
+                for (Item childItem : didl.getItems()) {
+                    VideoListItem item = VideoListItem.createForItem(service, childItem);
+                    VideoListContent.addItem(item);
+                }
+
+                //уже вызывается из MainActivity
+//                if (mCallbacks != null)
+//                    mCallbacks.onRefresh();
+
+            } catch (Exception ex) {
+                actionInvocation.setFailure(new ActionException(
+                        ErrorCode.ACTION_FAILED,
+                        "Can't create list childs: " + ex, ex));
+                failure(actionInvocation, null, ex.getMessage());
+            }
+        }
+
+        @Override
+        public void updateStatus(Status status) {
+
+        }
+
+        @Override
+        public void failure(ActionInvocation invocation, UpnpResponse response, String s) {
+            if (mCallbacks != null)
+                mCallbacks.onError(s);
+            //    mCallbacks.onDisplayItemsError(createDefaultFailureMessage(invocation, response));
+        }
+    }
 }

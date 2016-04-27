@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
     VideoPlayerFragment videoPlayerFragment;
     int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0;
     //стек для возвращения назад
-    private Stack<VideoListItem> backStack = new Stack<VideoListItem>();
+    private Stack<VideoListItem> backStack = new Stack<>();
     VideoListItem currentItem;
 
     @Override
@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
 
     @Override
     public void onBackPressed() {
+        videoPlayerFragment.reset();
         if(backStack.size()>1) {
             backStack.pop();
             currentItem = backStack.peek();
@@ -150,6 +151,14 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
             case ITEM:
                 //play video
                 try {
+                    //Uri uri = Uri.parse(item.getUrl());
+//                    MimeTypeMap mime = MimeTypeMap.getSingleton();
+//                    String type = mime.getMimeTypeFromUrl(uri.toString());
+//                    Intent intent = new Intent();
+//                    intent.setAction(android.content.Intent.ACTION_VIEW);
+//                    intent.setDataAndType(uri, type);
+//                    startActivity(intent);
+                    //Video video = new Video(item.getUrl(), Video.VideoType.OTHER);
                     videoPlayerFragment.PlayVideo(item.url);
                 }
                 catch (IOException ex){
@@ -163,16 +172,14 @@ public class MainActivity extends AppCompatActivity implements VideoItemFragment
         switch (currentItem.type){
             case LOCALCONTENT:
                 VideoListContent.fillLocalVideos(this);
-
                 break;
             case ROOT:
                 VideoListContent.fillRoot();
                 videoItemFragment.findDevices();
                 break;
             case DEVICE:
-                videoItemFragment.showContent(currentItem);
-                break;
             case DIRECTORY:
+                videoItemFragment.showUpnpContent(currentItem);
                 break;
         }
         videoItemFragment.UpdateList();

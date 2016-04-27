@@ -1,6 +1,9 @@
 package com.itmindco.dlnaplayervr.Fragments;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -59,9 +62,7 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
         }
 
         player = new AndroidMediaPlayer();
-        mediaController = new MediaController(getContext());
-        mediaController.setMediaPlayer(this);
-        mediaController.setAnchorView(getView());
+
     }
 
     @Override
@@ -78,6 +79,11 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
         });
         holder = videoPlayerContainer.getHolder();
         holder.addCallback(this);
+
+        mediaController = new MediaController(getContext());
+        mediaController.setMediaPlayer(this);
+        mediaController.setAnchorView(view);
+
         return view;
     }
 
@@ -108,6 +114,10 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
     public void PlayVideo(String videoUrl) throws IOException {
         player.reset();
         player.setDataSource(videoUrl);
+
+        //mediaController = new MediaController(getContext());
+        //mediaController.setMediaPlayer(this);
+        //mediaController.setAnchorView(getView());
         //ijkPlayer.setDisplay(holder);
 
         player.setOnPreparedListener(new IMediaPlayer.OnPreparedListener() {
@@ -170,6 +180,25 @@ public class VideoPlayerFragment extends Fragment implements SurfaceHolder.Callb
 
     }
 
+    public void reset() {
+        if (player != null) {
+            player.stop();
+            player.reset();
+
+            Canvas canvas = holder.lockCanvas();
+            canvas.drawColor(Color.BLACK, PorterDuff.Mode.CLEAR);
+            // Draw someting
+            holder.unlockCanvasAndPost(canvas);
+            //canvas.drawColor( 0, PorterDuff.Mode.CLEAR );
+
+        }
+    }
+
+    public void stop() {
+        if (player != null) {
+            player.stop();
+        }
+    }
     @Override
     public void start() {
         player.start();

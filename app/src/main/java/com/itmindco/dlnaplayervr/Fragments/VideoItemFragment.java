@@ -9,17 +9,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.itmindco.dlnaplayervr.Models.DeviceModel;
-import com.itmindco.dlnaplayervr.Models.ItemModel;
 import com.itmindco.dlnaplayervr.Models.VideoListContent;
 import com.itmindco.dlnaplayervr.Models.VideoListItem;
 import com.itmindco.dlnaplayervr.R;
 import com.itmindco.dlnaplayervr.UpnpService.ContentDirectoryBrowse;
-
-import org.fourthline.cling.model.meta.Device;
-
-import java.util.ArrayList;
 
 
 
@@ -96,17 +91,32 @@ public class VideoItemFragment extends Fragment implements ContentDirectoryBrows
         contentDirectoryBrowse.refreshDevices();
     }
 
-    public void showContent(VideoListItem item){
-        DeviceModel deviceModel = (DeviceModel) item;
-        Device device = deviceModel.getDevice();
-        if(device.isFullyHydrated()) {
-            contentDirectoryBrowse.showContent(deviceModel.getContentDirectory(), "0");
+    public void showUpnpContent(VideoListItem item) {
+        switch (item.type) {
+            case DEVICE:
+                if (item.device.isFullyHydrated()) {
+                    contentDirectoryBrowse.showContent(item.getContentDirectory(), "0");
+                }
+                break;
+            case DIRECTORY:
+                contentDirectoryBrowse.showContent(item.service, item.getId());
+                break;
         }
+
     }
 
     @Override
     public void onRefresh() {
         UpdateList();
+    }
+
+    @Override
+    public void onError(final String msg) {
+        getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 

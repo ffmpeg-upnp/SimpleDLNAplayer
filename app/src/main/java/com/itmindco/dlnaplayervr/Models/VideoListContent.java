@@ -15,9 +15,9 @@ import java.util.Map;
 
 public class VideoListContent {
 
-    public static final List<VideoListItem> ITEMS = new ArrayList<VideoListItem>();
+    public static final List<VideoListItem> ITEMS = new ArrayList<>();
 
-    public static final Map<String, VideoListItem> ITEM_MAP = new HashMap<String, VideoListItem>();
+    public static final Map<String, VideoListItem> ITEM_MAP = new HashMap<>();
 
     static {
         addItem(new VideoListItem("localvideo","Local","", VideoListItem.TypeListItem.LOCALCONTENT));
@@ -48,8 +48,7 @@ public class VideoListContent {
     }
 
     public static void fillLocalVideos(Context context){
-        ITEMS.clear();
-        ITEM_MAP.clear();
+        clear();
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(context,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -61,10 +60,10 @@ public class VideoListContent {
         Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
         String[] projection = { MediaStore.Video.VideoColumns.DATA };
         Cursor c = context.getContentResolver().query(uri, projection, null, null, null);
-        int vidsCount = 0;
+
         if (c != null) {
             c.moveToFirst();
-            vidsCount = c.getCount();
+
             do {
                 //Log.d("VIDEO", c.getString(0));
                 addItem(new VideoListItem(c.getString(0),c.getString(0),"", VideoListItem.TypeListItem.ITEM));
@@ -75,9 +74,13 @@ public class VideoListContent {
     }
 
     public static void fillRoot(){
+        clear();
+        addItem(new VideoListItem("localvideo","Local","", VideoListItem.TypeListItem.LOCALCONTENT));
+    }
+
+    public static void clear() {
         ITEMS.clear();
         ITEM_MAP.clear();
-        addItem(new VideoListItem("localvideo","Local","", VideoListItem.TypeListItem.LOCALCONTENT));
     }
 
 }
